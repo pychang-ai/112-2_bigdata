@@ -54,8 +54,33 @@ str(algae)
 algae
 is.na(algae$mxPH)[1:48]
 ```
+
+
+## 
+
 ```{r}
 which(is.na(algae$mxPH))
+```
+```{r}
+
+# 直接移除NA並另存為mxPH.na.omit
+mxPH.na.omit <- na.omit(algae$mxPH)
+                        
+length(mxPH.na.omit)
+# 說明遺缺值處理方式的詮釋資料
+attributes(mxPH.na.omit)
+```
+# 有NA就報錯的處理方式na.fail()
+```{r}
+
+na.fail(algae$mxPH)
+
+```
+```{r}
+library(mice)
+library(VIM)
+
+
 ```
 
 
