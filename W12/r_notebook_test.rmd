@@ -80,9 +80,245 @@ na.fail(algae$mxPH)
 library(mice)
 library(VIM)
 
+aggr(algae, prop = FALSE, numbers = TRUE, cex.axis = .5) # 長條圖 + 熱圖/長條圖
+
+```
+```{r}
+
+complete.cases(algae)[1:60]
+
+```
+## 邏輯否定運算子搭配which()函數，抓出不完整樣本位置
+```{r}
+which(!complete.cases(algae))
+```
+## 取出不完整的樣本加以檢視\
+```{r}
+algae[which(!complete.cases(algae)),]
+```
+# 也可以用邏輯值索引取出不完整的樣本(請自行練習)
+```{r}
+ algae[!complete.cases(algae),]
+```
+## 以邏輯值索引移除不完整的觀測值
+
+```{r}
+algae1 <- algae[complete.cases(algae),]
+algae1
+```
+```{r}
+# 統計各樣本遺缺變數個數
+apply(algae, MARGIN = 1, FUN = function(x) {sum(is.na(x))})
+
+```
+# 結果與complete.cases()一致
+```{r}
+
+which(apply(algae, MARGIN = 1, FUN = function(x)
+{sum(is.na(x))}) > 0)
+```
+```{r}
+## ------------------------------------------------------------------------
+data(algae)
+# 返回遺缺變數數量超過20%以上(nORp=0.2)的樣本編號
+manyNAs(algae, nORp = 0.2)
+# 負索引刪除遺缺程度較嚴重的樣本
+# Python語言以DataFrame之drop()方法刪除
+algae <- algae[-manyNAs(algae),]
 
 ```
 
+```{r}
+## ----fig.align="center", fig.cap = "\\label{fig:algae_mxPH}最大酸鹼值mxPH散佈狀況圖", warning = FALSE, message=FALSE----
+library(car) # J. Fox and S. Weisberg, An R Companion to Applied Regression, Third Edition, Sage, 2019.
+# 圖面切分一列兩行(mfrow=c(1,2))，cex.main主標題文字縮小70%
+par(mfrow = c(1, 2), cex.main = 0.7)
+```
+```{r}
+# 左行高階繪圖(直方圖)
+hist(algae$mxPH, prob = T, xlab = '', main =
+'Histogram of maximum pH value', ylim = 0:1)
+```
+# 左行低階繪圖兩次(密度曲線加一維散佈刻度)
+```{r}
+# 左行高階繪圖(直方圖)
+hist(algae$mxPH, prob = T, xlab = '', main =
+'Histogram of maximum pH value', ylim = 0:1)
+# 左行低階繪圖兩次(密度曲線加一維散佈刻度)
+lines(density(algae$mxPH, na.rm = T))
+rug(jitter(algae$mxPH))
+```
+
+```{r}
+# 右行高階繪圖(常態機率繪圖，點靠近斜直線表近似常態分佈)
+qqPlot(algae$mxPH, main = 'Normal QQ plot of maximum pH')
+# 還原圖面一列一行原始設定
+par(mfrow = c(1,1))
+
+```
+
+# 用自己的算術平均數填補遺缺值
+```{r}
+algae[48,'mxPH'] <- mean(algae$mxPH, na.rm = T)
+## ----fig.align="center", fig.cap = "\\label{fig:algae_Chla}葉綠素Chla散佈狀況圖", warning = FALSE, message=FALSE----
+par(mfrow = c(1,2))
+hist(algae$Chla, prob = T, xlab='', main='Histogram of Chla')
+lines(density(algae$Chla,na.rm = T))
+rug(jitter(algae$Chla))
+```
+
+
+# 順帶返回偏離嚴重的樣本編號
+
+```{r}
+qqPlot(algae$Chla,main = 'Normal QQ plot of Chla')
+par(mfrow = c(1,1))
+```
+
+# 用自己的中位數填補遺缺值
+```{r}
+
+algae[is.na(algae$Chla),'Chla'] <- median(algae$Chla,na.rm = T)
+
+```
+
+## ------------------------------------------------------------------------
+```{r}
+data(algae)
+
+```
+# 移除遺缺狀況嚴重的樣本
+
+```{r}
+algae <- algae[-manyNAs(algae),]
+```
+
+# 檢視遺缺狀況較不嚴重的樣本
+```{r}
+algae[!complete.cases(algae),]
+```
+
+# 用各欄位自身的集中趨勢資訊進行填補
+```{r}
+algae <- centralImputation(algae)
+algae
+```
+
+# 已無不完整的樣本了！
+```{r}
+algae[!complete.cases(algae),]
+algae
+```
+```{r}
+library(Hmisc)
+data(algae)
+```
+# 以算術平均數填補mxPH遺缺值，星號顯示填補位置
+
+```{r}
+impute(algae$mxPH, fun = mean)[40:55]
+
+```
+# Chla有遺缺值
+```{r}
+summary(algae$Chla)
+```
+
+# 以中位數填補Chla遺缺值
+```{r}
+impute(algae$Chla, fun = median)[50:65]
+```
+
+# 以固定數值45填補Chla遺缺值
+```{r}
+impute(algae$Chla, fun = 45)[50:65]
+```
+
+# 以隨機產生的數值填補Chla遺缺值
+```{r}
+impute(algae$Chla, fun = "random")[50:65]
+```
+## ------------------------------------------------------------------------
+# "complete.obs"選項使用完整觀測值計算兩兩變數的相關係數
+```{r}
+cor(algae[,4:18], use = "complete.obs")[6:11,6:11]
+```
+
+# "everything"用全部的觀測值計算相關係數，可能返回NA值
+```{r}
+cor(algae[,4:18], use = "everything")[6:11,6:11]
+
+```
+
+# "all.obs"選項當觀測值中有NAs時會返回錯誤訊息
+# cor(algae[,4:18], use = "all.obs")
+# Error in cor(algae[, 4:18], use = "all.obs") :
+# missing observations in cov/cor
+```{r}
+## ------------------------------------------------------------------------
+# "pairwise.complete.obs"選項使用成對完整的觀測值計算相關係數
+cor(algae[,4:18], use = "pairwise.complete.obs")[6:11,6:11]
+```
+
+# pairwise.complete.obs與complete.obs兩者計算結果不完全相同！
+```{r}
+cor(algae[,4:18], use = "pairwise.complete.obs") ==
+cor(algae[,4:18], use = "complete.obs")
+
+```
+```{r}
+# 只有對角線上的相關係數值相同，其它全部不同！
+sum(cor(algae[,4:18], use = "pairwise.complete.obs") ==
+cor(algae[,4:18], use = "complete.obs"))
+
+```
+```{r}
+# 相關係數矩陣符號化，*表PO4與oPO4係數絕對值超過0.9
+symnum(cor(algae[,4:18],use = "complete.obs"))
+```
+## ------------------------------------------------------------------------
+```{r}
+data(algae)
+algae <- algae[-manyNAs(algae),]
+# R語言線性建模重要函數lm()
+(mdl <- lm(PO4 ~ oPO4, data = algae))
+```
+```{r}
+## ----------------------------
+(algae[28,'PO4'] <- 42.897 + 1.293 * algae[28,'oPO4'])
+
+## --
+```
+```{r}
+## ------------------------------------------------------------------------
+data(algae)
+algae <- algae[-manyNAs(algae),]
+# 創造多個PO4遺缺的情境
+algae$PO4[29:33] <- NA
+
+
+```
+
+```{r}
+# 考慮連自變數oPO4都遺缺的邊界案例(edge case)(參見1.9節)
+algae$oPO4[33] <- NA
+```
+
+
+```{r}
+algae[is.na(algae$PO4), c('oPO4','PO4')]
+
+```
+```{r}
+## ------------------------------------------------------------------------
+fillPO4 <- function(oP) { # oP即為自變量oPO4
+  # 邊界案例處理
+  if (is.na(oP)) return(NA)
+  # 從模型物件mdl中取出迴歸係數進行補值計算
+  else return(mdl$coef[1] + mdl$coef[2] * oP)
+}
+
+```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
