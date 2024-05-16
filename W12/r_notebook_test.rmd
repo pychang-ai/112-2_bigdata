@@ -73,7 +73,7 @@ attributes(mxPH.na.omit)
 # 有NA就報錯的處理方式na.fail()
 ```{r}
 
-na.fail(algae$mxPH)
+# na.fail(algae$mxPH)
 
 ```
 ```{r}
@@ -309,6 +309,7 @@ algae$oPO4[33] <- NA
 algae[is.na(algae$PO4), c('oPO4','PO4')]
 
 ```
+
 ```{r}
 ## ------------------------------------------------------------------------
 fillPO4 <- function(oP) { # oP即為自變量oPO4
@@ -318,6 +319,100 @@ fillPO4 <- function(oP) { # oP即為自變量oPO4
   else return(mdl$coef[1] + mdl$coef[2] * oP)
 }
 
+## ------------------------------------------------------------------------
+# 邏輯值索引、隱式迴圈與自訂函數
+algae[is.na(algae$PO4),'PO4']<-sapply(algae[is.na(algae$PO4),'oPO4'], fillPO4)
+# 檢視填補完成狀況
+algae[28:33, c('PO4', 'oPO4')]
+
+
+```
+
+
+```{r}
+
+## ------------------------------------------------------------------------
+data(algae)
+algae <- algae[-manyNAs(algae),]
+# k近鄰填補函數，預設meth引數為加權平均"weighAvg"
+algae <- knnImputation(algae, k = 10)
+
+```
+
+
+
+```{r}
+
+## ------------------------------------------------------------------------
+data(algae)
+algae <- algae[-manyNAs(algae),]
+# 以近鄰的中位數填補遺缺值
+algae <- knnImputation(algae,k=10, meth='median')
+
+
+algae
+
+
+
+```
+```{r}
+## ----fig.align="center", fig.cap = "\\label{fig:algae_mxPH_season}不同季節下最大酸鹼值mxPH的散佈狀況"----
+data(algae)
+algae <- algae[-manyNAs(algae),]
+# 重要的建議套件
+library(lattice)
+# 更改默認的因子水準順序(預設是照字母順序)
+algae$season <- factor(algae$season,levels =
+c('spring','summer','autumn','winter'))
+# mxPH條件式直方圖，依季節分層
+histogram(~ mxPH | season, data = algae)
+
+```
+
+```{r}
+## ----fig.align="center", fig.cap = "\\label{fig:algae_mxPH_size}不同河流大小下最大酸鹼值mxPH的散佈狀況"----
+# mxPH條件式直方圖，依河流大小分層
+histogram(~ mxPH | size, data = algae)
+
+```
+
+```{r}
+## ------------------------------------------------------------------------
+# mxPH遺缺該筆樣本的size為small
+algae[is.na(algae$mxPH), 'size']
+# 抓取size為small的所有樣本，計算平均mxPH值(顯然較低！)
+mean(algae[algae$size == "small", 'mxPH'], na.rm = T)
+
+
+```
+## ----fig.align="center", fig.cap =
+```{r}
+
+```
+
+```{r}
+ "\\label{fig:algae_mxPH_size_speed}不同河流大小與流速下最大酸鹼值mxPH的散佈狀況"----
+# 多因子變數的條件式直方圖，以*串接兩個分組變數
+histogram(~ mxPH | size*speed, data = algae)
+
+```
+## ----fig.align="center", fig.cap = "\\label{fig:algae_mxPH_size_speed_strip}不同河流大小與流速下最大酸鹼值mxPH的點條圖"----
+# 兩個因子變數，一個數值變數的點條圖
+# 注意jitter=T是為了避免於同處過度繪製(overplotting)!
+
+```{r}
+
+stripplot(size ~ mxPH | speed, data = algae, jitter = T)
+
+```
+
+## 2.2 資料摘要與彙總 ####
+## 2.2.1 摘要統計量 ####
+## ----warning=FALSE, message=FALSE----
+```{r}
+library(nutshell)
+
+data(dow30)
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
