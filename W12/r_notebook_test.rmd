@@ -410,9 +410,17 @@ stripplot(size ~ mxPH | speed, data = algae, jitter = T)
 ## 2.2.1 摘要統計量 ####
 ## ----warning=FALSE, message=FALSE----
 ```{r}
-library(nutshell)
+library(ascentTraining)
+dow_jones_data
 
-data(dow30)
+str(dow_jones_data)
+```
+
+
+```{r}
+mean(dow_jones_data$DJI.Open)
+
+# dow30 <- read.
 ```
 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
