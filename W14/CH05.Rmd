@@ -1,0 +1,117 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## 5.1 線性迴歸與分類 ####
+## 5.1.1 多元線性迴歸 ------------------------------------------------------------------------
+
+```{r}
+library(AppliedPredictiveModeling)
+# 載入溶解度資料的數個資料物件
+data(solubility)
+# 資料物件名都是以solT開頭的名稱
+ls(pattern = "^solT")
+```
+## ------------------------------------------------------------------------
+# 計算樣本總數
+
+```{r}
+nrow(solTrainXtrans) + nrow(solTestXtrans)
+
+```
+# 預測變數個數
+
+```{r}
+ncol(solTrainXtrans)
+```
+## ------------------------------------------------------------------------
+# 合併屬性矩陣X與類別標籤向量y，產生統計人群慣用的資料表
+
+
+```{r}
+trainingData <- solTrainXtrans
+trainingData
+```
+
+
+```{r}
+trainingData$Solubility <- solTrainY
+head(trainingData$Solubility)
+```
+
+# R語言線性迴歸建模的主要函數lm()
+```{r}
+lmFitAllPredictors <- lm(Solubility ~ ., data = trainingData)
+```
+
+# 配適好的模型其類別與建模函數同名
+```{r}
+class(lmFitAllPredictors)
+```
+
+# summary.lm()產生R語言線性迴歸摘要報表lmAllRpt
+```{r}
+lmAllRpt <- summary(lmFitAllPredictors)
+```
+
+# 229個迴歸係數報表很長，僅挑出其t檢定顯著水準低於5%者
+```{r}
+sigVars <- lmAllRpt$coefficients[,"Pr(>|t|)"] < .05
+```
+
+
+# 54個係數的顯著水準低於5%(至少一星*)
+```{r}
+sum(sigVars)
+```
+
+
+# 邏輯值索引只檢視54個顯著的迴歸係數
+# 更新原229項龐大的迴歸係數報表
+```{r}
+lmAllRpt$coefficients <- lmAllRpt$coefficients[sigVars, ]
+lmAllRpt
+
+```
+## ------------------------------------------------------------------------
+# predict.lm()預測測試樣本溶解度
+
+```{r}
+
+lmPred1 <- predict(lmFitAllPredictors, solTestXtrans)
+head(lmPred1)
+
+```
+
+# 測試集實際值與預測值組成資料框
+
+```{r}
+
+lmValues1 <- data.frame(obs = solTestY, pred = lmPred1)
+lmValues1
+```
+```{r}
+# R語言{caret}套件績效評量計算函數
+defaultSummary(lmValues1)
+```
+```{r}
+# 後向式逐步迴歸step()需傳入完整模型，再逐次剔除不重要變數
+# 建模時間長，system.time()衡量程式碼執行時間(1.9節)
+# 逐步迴歸建模過程AIC或BIC值愈小，模型配適的愈好(3.2.1節)
+system.time(reducedSolMdl <- step(lmFitAllPredictors,
+direction='backward'))
+# 儲存執行耗時的配適結果
+save(reducedSolMdl, file = "reducedSolMdl.RData")
+```
+
+```{r}
+# 因模型建立耗時，載入預先跑好的模型物件
+load("./_data/reducedSolMdl.RData")
+```
+# 原始報表過長，請讀者自行執行程式碼
+
+```{r}
+summary(reducedSolMdl)
+```
+
