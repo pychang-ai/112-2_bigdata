@@ -318,12 +318,15 @@ fillPO4 <- function(oP) { # oP即為自變量oPO4
   # 從模型物件mdl中取出迴歸係數進行補值計算
   else return(mdl$coef[1] + mdl$coef[2] * oP)
 }
+```
 
+
+```{r}
 ## ------------------------------------------------------------------------
 # 邏輯值索引、隱式迴圈與自訂函數
-algae[is.na(algae$PO4),'PO4']<-sapply(algae[is.na(algae$PO4),'oPO4'], fillPO4)
+# algae[is.na(algae$PO4),'PO4']<-sapply(algae[is.na(algae$PO4),'oPO4'], fillPO4)
 # 檢視填補完成狀況
-algae[28:33, c('PO4', 'oPO4')]
+# algae[28:33, c('PO4', 'oPO4')]
 
 
 ```
@@ -606,8 +609,10 @@ Gini(as.factor(rep("a", 6)))
 # 非完美情況
 ```{r}
 ## ------------------------------------------------------------------------
-
 as.factor(c(rep("a", 1), rep("b", 5)))
+Gini(as.factor(c(rep("a", 1), rep("b", 5))))
+```
+```{r}
 Gini(as.factor(c(rep("a", 1), rep("b", 5))))
 ```
 
@@ -616,7 +621,7 @@ Gini(as.factor(c(rep("a", 1), rep("b", 5))))
 
 as.factor(c("a", "b", "c", "d", "e"))
 Gini(as.factor(c("a", "b", "c", "d", "e"))) # 1 - 1/k = 1 - 1/5 = 0.8
-
+Gini(as.factor(c("c", "b", "c", "c", "e"))) 
 
 ```
 ## 2.2.2 R語言群組與摘要 ------------------------------------------------------------------------
@@ -787,15 +792,29 @@ iris.tbl[ , Sepal.Width := NULL]; iris.tbl
 # data.table群組與摘要語法特殊
 iris.tbl[ , list(Sepal.Length = mean(Sepal.Length),
 Petal.Width = median(Petal.Width)), by = Species]
+```
+
 
 ## 2.3 屬性工程 ####
 ## 2.3.1 屬性轉換與移除 ------------------------------------------------------------------------
 # R語言產生隨機抽樣模擬數據
+```{r}
 set.seed(1234)
 (X <- matrix(runif(12), 3))
+```
+
 # 橫向正規化(固定和)
+```{r}
 apply(X, 1, sum)
+```
+
+
+```{r}
 (X_sum100 <- X/apply(X, 1, sum)*100)
+```
+
+
+```{r}
 # 核驗結果
 apply(X_sum100, 1, sum)
 # 橫向正規化(固定最大值)
@@ -813,7 +832,10 @@ apply(X_length1^2, 1, sum)
 # 本節 running example
 library(AppliedPredictiveModeling)
 data(segmentationOriginal)
+```
 
+
+```{r}
 ## ----eval=FALSE----------------------------------------------------------
 ## str(segmentationOriginal, list.len = 10)
 
@@ -822,7 +844,10 @@ library(UsingR)
 # 119個變數名稱，限於篇幅，只顯示頭尾
 headtail(names(segmentationOriginal))
 # 目標變數`Class`次數分佈`table`(segmentationOriginal$Case)
+```
 
+
+```{r}
 ## ----eval=FALSE----------------------------------------------------------
 ## # 報表太大，請讀者自行執行
 ## summary(segmentationOriginal)
